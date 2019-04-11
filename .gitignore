@@ -1,4 +1,4 @@
-.idea/**
-__pycache__/**
-*.pyc
-db.sqlite3
+*.py[co]
+.idea/
+__pycache_
+db.sqlite3_
