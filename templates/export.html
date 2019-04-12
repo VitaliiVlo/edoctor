@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Export</title>
+</head>
+
+<style>
+    table, tr, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+        padding: 4px;
+    }
+</style>
+<body>
+
+<h4 align="center">Doctor: {{ doctor.get_full_name }}</h4>
+<h4 align="center">Date: {{ date|date:"d.m.Y" }}</h4>
+
+<table border="1" align="center">
+    <tr>
+        <td>Time</td>
+        <td>First name</td>
+        <td>Last name</td>
+        <td>Age</td>
+        <td>Gender</td>
+        <td>City</td>
+        <td>Street</td>
+        <td>Phone</td>
+    </tr>
+    {% for v in visits %}
+        <tr>
+            <td>{{ v.time }}</td>
+            <td>{{ v.patient_details.first_name }}</td>
+            <td>{{ v.patient_details.last_name }}</td>
+            <td>{{ v.patient_details.age }}</td>
+            <td>{{ v.patient_details.gender }}</td>
+            <td>{{ v.patient_details.city }}</td>
+            <td>{{ v.patient_details.street }}</td>
+            <td>{{ v.patient_details.phone }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

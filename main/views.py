@@ -1,13 +1,17 @@
 import datetime
+from io import BytesIO
 
 from django.db.models import Q
+from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from weasyprint import HTML
 
 from main.decorators import parse_json
 from main.http import json_error
@@ -139,6 +143,21 @@ class VisitListView(APIView):
         create_visit_for_doctor(doctor, date)
         visits = Visit.objects.filter(doctor=doctor, start_date__date=date).order_by('start_date')
         visit_serializer = VisitSerializer(visits, many=True, context={'user': request.user})
+
+        if request.GET.get('export', False):
+            context = {
+                'visits': visit_serializer.data,
+                'doctor': doctor,
+                'date': date
+            }
+            html = render_to_string('export.html', context=context)
+            html_document = HTML(string=html)
+            pdf_buffer = BytesIO()
+            html_document.write_pdf(pdf_buffer)
+            response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="report_%s_%s.pdf"' % (doctor.get_full_name(),
+                                                                                           date.strftime("%d %b %Y"))
+            return response
         return JsonResponse(visit_serializer.data, safe=False)
 
     # @staticmethod
