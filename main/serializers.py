@@ -1,3 +1,5 @@
+from datetime import date
+
 from rest_framework import serializers
 
 from main.models import UserProfile, Hospital, Visit
@@ -16,17 +18,36 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-class PatientSerializer(serializers.ModelSerializer):
+class BaseDoctorPatientSerializer(serializers.ModelSerializer):
+    age = serializers.SerializerMethodField(read_only=True)
+    gender = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = UserProfile
-        fields = ['pk', 'first_name', 'last_name', 'email', 'gender', 'phone_number', 'birthday', 'city',
-                  'street', 'zip_code']
+        fields = ['pk', 'first_name', 'last_name', 'gender', 'age']
+
+    @staticmethod
+    def get_age(instance):
+        today = date.today()
+        return today.year - instance.birthday.year - ((today.month, today.day) < (instance.birthday.month,
+                                                                                  instance.birthday.day))
+
+    @staticmethod
+    def get_gender(instance):
+        return dict(UserProfile.GENDER_CHOICES)[instance.gender]
 
 
-class DoctorSerializer(serializers.ModelSerializer):
+class PatientSerializer(BaseDoctorPatientSerializer):
     class Meta:
         model = UserProfile
-        fields = ['pk', 'first_name', 'last_name', 'gender', 'birthday']
+        fields = ['pk', 'first_name', 'last_name', 'gender', 'age',
+                  'email', 'phone_number', 'city', 'street', 'zip_code']
+
+
+class DoctorSerializer(BaseDoctorPatientSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['pk', 'first_name', 'last_name', 'gender', 'age']
 
 
 class HospitalSerializer(serializers.ModelSerializer):
