@@ -2,3 +2,4 @@
 .idea/
 __pycache_
 db.sqlite3
+static/prod/
