@@ -8,7 +8,6 @@ from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from weasyprint import HTML
@@ -16,7 +15,7 @@ from weasyprint import HTML
 from main.decorators import parse_json
 from main.http import json_error
 from main.models import Hospital, Visit, UserProfile
-from main.permissions import IsAdminOrReadOnly, IsDoctor
+from main.permissions import IsAdminOrReadOnly
 from main.serializers import UserSerializer, HospitalSerializer, VisitSerializer
 from main.utils import create_visit_for_doctor
 
@@ -28,11 +27,15 @@ class UserView(APIView):
         return super(UserView, self).dispatch(*args, **kwargs)
 
     @staticmethod
-    @permission_classes((IsDoctor,))
     def get(request):
         name = request.GET.get('name', '')
-        role = request.GET.get('role', UserProfile.PATIENT)
+        role = request.GET.get('role', UserProfile.DOCTOR)
+        hospital = request.GET.get('hospital')
+        if not request.user.can_change_visit() and role != UserProfile.DOCTOR:
+            return json_error("You can see only doctors")
         users = UserProfile.objects.filter(Q(first_name__icontains=name) | Q(last_name__icontains=name), role=role)
+        if hospital:
+            users = users.filter(hospital=hospital)
         user_serializer = UserSerializer(users, many=True)
         return JsonResponse(user_serializer.data, safe=False)
 
