@@ -1,3 +1,4 @@
+from rest_framework.compat import is_authenticated
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
@@ -21,4 +22,15 @@ class IsDoctor(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user and request.user.can_change_visit()
+        )
+
+
+class IsAuthenticatedToRead(BasePermission):
+    """
+    The request from doctor, nurse or admin.
+    """
+
+    def has_permission(self, request, view):
+        return request.method == 'POST' or (
+            request.user and is_authenticated(request.user)
         )

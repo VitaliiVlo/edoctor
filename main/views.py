@@ -15,12 +15,14 @@ from weasyprint import HTML
 from main.decorators import parse_json
 from main.http import json_error
 from main.models import Hospital, Visit, UserProfile
-from main.permissions import IsAdminOrReadOnly
+from main.permissions import IsAdminOrReadOnly, IsAuthenticatedToRead
 from main.serializers import UserSerializer, HospitalSerializer, VisitSerializer
 from main.utils import create_visit_for_doctor
 
 
 class UserView(APIView):
+    permission_classes = (IsAuthenticatedToRead,)
+
     @method_decorator(csrf_exempt)
     @method_decorator(parse_json)
     def dispatch(self, *args, **kwargs):
