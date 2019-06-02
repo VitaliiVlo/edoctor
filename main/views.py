@@ -187,10 +187,13 @@ class VisitDetailView(APIView):
 
     @staticmethod
     def patch(request, pk, visit):
-        if not request.user.can_change_visit() and visit.patient and (visit.patient != request.user or
-                                                                      visit.patient.pk != request.json.get('patient')):
-            return json_error("You don't have permission to change visit for another user")
-        visit_serializer = VisitSerializer(visit, data=request.json, partial=True, context={'user': request.user})
+        data = request.json
+        if not request.user.can_change_visit():
+            if visit.patient:
+                return json_error("You don't have permission to cancel visit of another user")
+            data = {'patient': request.user.pk}
+
+        visit_serializer = VisitSerializer(visit, data=data, partial=True, context={'user': request.user})
         if visit_serializer.is_valid():
             visit_serializer.save()
             return JsonResponse(visit_serializer.data)
