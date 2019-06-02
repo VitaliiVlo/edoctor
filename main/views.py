@@ -209,3 +209,18 @@ class VisitDetailView(APIView):
         visit.patient = None
         visit.save()
         return JsonResponse({})
+
+
+class UserVisitView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(UserVisitView, self).dispatch(*args, **kwargs)
+
+    @staticmethod
+    def get(request):
+        today = datetime.date.today()
+        visits = Visit.objects.filter(start_date__date__gte=today, patient=request.user).order_by('start_date')
+        visit_serializer = VisitSerializer(visits, many=True, context={'user': request.user})
+        return JsonResponse(visit_serializer.data, safe=False)
