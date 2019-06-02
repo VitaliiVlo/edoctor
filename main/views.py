@@ -31,7 +31,10 @@ class UserView(APIView):
     @staticmethod
     def get(request):
         name = request.GET.get('name', '')
-        role = request.GET.get('role', UserProfile.DOCTOR)
+        try:
+            role = int(request.GET.get('role', UserProfile.DOCTOR))
+        except TypeError:
+            return json_error('Role must be number')
         hospital = request.GET.get('hospital')
         if not request.user.can_change_visit() and role != UserProfile.DOCTOR:
             return json_error("You can see only doctors")
