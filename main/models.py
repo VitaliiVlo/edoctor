@@ -100,7 +100,8 @@ class Visit(models.Model):
 
     def save(self, *args, **kwargs):
         visits = Visit.objects.filter(Q(start_date__gte=self.start_date) & Q(start_date__lt=self.end_date) |
-                                      Q(end_date__gt=self.start_date) & Q(end_date__lte=self.end_date))
+                                      Q(end_date__gt=self.start_date) & Q(end_date__lte=self.end_date),
+                                      doctor=self.doctor)
         if visits.exists():
             return
         super(Visit, self).save(*args, **kwargs)
